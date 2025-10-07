@@ -9,16 +9,16 @@ if [ "$CONFIRM" != "yes" ]; then
     exit 0
 fi
 
-ssh master01 "sudo ufw enable" 
-ssh master02 "sudo ufw enable"
-ssh master03 "sudo ufw enable"
-ssh node01   "sudo ufw enable"    
-ssh node02   "sudo ufw enable"    
-ssh node03   "sudo ufw enable"    
+ssh jaist-lab@master01 "sudo ufw enable" 
+ssh jaist-lab@master02 "sudo ufw enable"
+ssh jaist-lab@master03 "sudo ufw enable"
+ssh jaist-lab@node01   "sudo ufw enable"    
+ssh jaist-lab@node02   "sudo ufw enable"    
+ssh jaist-lab@node03   "sudo ufw enable"    
 
-ssh dev-master01 "sudo ufw enable" 
-ssh dev-master02 "sudo ufw enable"
-ssh dev-master03 "sudo ufw enable"
-ssh dev-node01   "sudo ufw enable"    
-ssh dev-node02   "sudo ufw enable"    
-ssh dev-node03   "sudo ufw enable"    
+ssh jaist-lab@dev-master01 "sudo ufw enable" 
+ssh jaist-lab@dev-master02 "sudo ufw enable"
+ssh jaist-lab@dev-master03 "sudo ufw enable"
+ssh jaist-lab@dev-node01   "sudo ufw enable"    
+ssh jaist-lab@dev-node02   "sudo ufw enable"    
+ssh jaist-lab@dev-node03   "sudo ufw enable"    
