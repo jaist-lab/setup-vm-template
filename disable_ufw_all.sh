@@ -1,7 +1,7 @@
 #!/bin/bash
 # 確認プロンプト
 
-echo "reboot all VMs"
+echo "Disable ufw all VMs"
 read -p "Are you sure you want to continue? (yes/no): " CONFIRM
 
 if [ "$CONFIRM" != "yes" ]; then
