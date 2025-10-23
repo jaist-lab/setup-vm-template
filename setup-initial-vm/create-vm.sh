@@ -163,7 +163,7 @@ if ! qm create $VM_ID \
   --balloon $MEMORY_MB \
   --net0 virtio,bridge=vmbr0 \
   --net1 virtio,bridge=vmbr100 \
-  --vga virtio \
+  --vga std \
   --serial0 socket \
   --boot "order=scsi0;ide2;net0" 2>&1; then
 
