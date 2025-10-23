@@ -142,13 +142,13 @@ echo "CPU Cores: $CPU_CORES"
 echo "Memory: ${MEMORY_GB}GB (${MEMORY_MB}MB)"
 echo "Disk: ${DISK_GB}GB"
 echo "Network: vmbr0, vmbr100"
+echo "Display: VirtIO-GPU"
 echo ""
 
 # VM作成実行
 echo "VM作成コマンドを実行中..."
 if ! qm create $VM_ID \
   --name "$VM_NAME" \
-  --vga virtio \
   --bios ovmf \
   --machine q35 \
   --ostype l26 \
@@ -163,6 +163,7 @@ if ! qm create $VM_ID \
   --balloon $MEMORY_MB \
   --net0 virtio,bridge=vmbr0 \
   --net1 virtio,bridge=vmbr100 \
+  --vga virtio \
   --serial0 socket \
   --boot "order=scsi0;ide2;net0" 2>&1; then
 
@@ -181,8 +182,9 @@ echo "CPU Cores: $CPU_CORES"
 echo "Memory: ${MEMORY_GB}GB"
 echo "Disk: ${DISK_GB}GB"
 echo "Network Interfaces:"
-echo "  - net0: vmbr0"
-echo "  - net1: vmbr100"
+echo "  - net0: vmbr0 (DHCP)"
+echo "  - net1: vmbr100 (要固定IP設定)"
+echo "Display: VirtIO-GPU"
 echo ""
 echo "=== VM設定確認 ==="
 qm config $VM_ID
@@ -199,4 +201,6 @@ echo "3. コンソール接続: Proxmox WebUIから接続"
 echo ""
 echo "ブート順序: 1. HDD(scsi0) → 2. CD/DVD(ide2) → 3. Network(net0)"
 echo ""
-echo "注意: UEFI環境では初回起動時にUEFIシェルが表示される場合があります"
+echo "ネットワーク設定について:"
+echo "  - vmbr0: DHCPで自動取得"
+echo "  - vmbr100: インストール時またはcloud-initで固定IP設定が必要"
