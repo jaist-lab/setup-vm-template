@@ -148,6 +148,7 @@ echo ""
 echo "VM作成コマンドを実行中..."
 if ! qm create $VM_ID \
   --name "$VM_NAME" \
+  --vga virtio \
   --bios ovmf \
   --machine q35 \
   --ostype l26 \
