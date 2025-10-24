@@ -204,3 +204,7 @@ echo ""
 echo "ネットワーク設定について:"
 echo "  - vmbr0: DHCPで自動取得"
 echo "  - vmbr100: インストール時またはcloud-initで固定IP設定が必要"
+echo "Proxmox Console(VNC)について:"
+echo "  - ブラウザとの証明書の関係でVNCが表示されないことがあります。。"
+echo "  - その場合は、ブラウザをFirefoxで実行してください。"
+
