@@ -9,6 +9,7 @@ fi
 
 sudo tee -a /etc/hosts << 'EOF'
 
+
 #  Testbed servers
 172.16.100.11   r760xs1
 172.16.100.12   r760xs2
@@ -21,19 +22,31 @@ sudo tee -a /etc/hosts << 'EOF'
 172.16.100.33   dlcsv3
 172.16.100.34   dlcsv4
 
-# Production  servers
+# management server(VM)
+172.16.100.100 vessel
+172.16.100.99  monitoring
+
+# Production  servers(VM)
 172.16.100.101  master01
 172.16.100.102  master02
 172.16.100.103  master03
-172.16.100.111  node01
-172.16.100.112  node02
-172.16.100.113  node03
+172.16.100.104  node01
+172.16.100.105  node02
 
-# Development  servers
+# Development 1 servers(VM)
 172.16.100.121  dev-master01
 172.16.100.122  dev-master02
 172.16.100.123  dev-master03
-172.16.100.131  dev-node01
-172.16.100.132  dev-node02
-172.16.100.133  dev-node03
+172.16.100.124  dev-node01
+172.16.100.125  dev-node02
+
+# Development 2 servers(VM)
+172.16.100.131  dev-master21
+172.16.100.132  dev-master22
+172.16.100.133  dev-master23
+172.16.100.134  dev-node21
+172.16.100.135  dev-node22
+
+
+
 EOF
