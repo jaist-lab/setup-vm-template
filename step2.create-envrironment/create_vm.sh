@@ -127,11 +127,12 @@ echo "=== Cloud-Init Network ==="
 ssh root@$TARGET_IP "qm cloudinit dump $VMID network"
 echo ""
 
+sleep 60
+
 # VM起動
 echo "[6/6] VM起動中..."
 ssh root@$TARGET_IP "qm start $VMID"
 # 処理完了を待つための待ち時間
-sleep 30
 
 echo ""
 echo "========================================="
