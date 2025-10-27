@@ -73,7 +73,7 @@ fi
 
 # 固定設定
 GATEWAY1="172.16.100.1"
-GATEWAY2="172.16.200.1"  # 2つ目のネットワーク用
+GATEWAY2="192.168.1.1"  # 2つ目のネットワーク用
 DNS="150.65.0.1"
 SEARCH_DOMAIN="jaist.ac.jp"
 CI_USER="jaist-lab"
