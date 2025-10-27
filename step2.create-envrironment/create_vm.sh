@@ -40,8 +40,7 @@ usage() {
   $0 131 r760xs3 172.16.100.131 dev-node01 "" 902 4 32768
 
 設定値:
-  ゲートウェイ1: 172.16.100.1
-  ゲートウェイ2: 192.168.1.1 (IP_ADDRESS2指定時)
+  ゲートウェイ: 172.16.100.1 (IP_ADDRESS1のみ)
   DNS: 150.65.0.1
   Search Domain: jaist.ac.jp
   ユーザー: jaist-lab
@@ -83,8 +82,7 @@ if [ -z "$TARGET_IP" ]; then
 fi
 
 # 固定設定
-GATEWAY1="172.16.100.1"
-GATEWAY2="192.168.1.1"  # 2つ目のネットワーク用
+GATEWAY="172.16.100.1"
 DNS="150.65.0.1"
 SEARCH_DOMAIN="jaist.ac.jp"
 CI_USER="jaist-lab"
@@ -122,13 +120,13 @@ sleep 30
 
 # Cloud-Init設定
 echo "[4/6] Cloud-Init設定を適用中..."
-# 1つ目のIPアドレス設定
-ssh root@$TARGET_IP "qm set $VMID --ipconfig0 ip=$IP_ADDRESS1/24,gw=$GATEWAY1"
+# 1つ目のIPアドレス設定（ゲートウェイ付き）
+ssh root@$TARGET_IP "qm set $VMID --ipconfig0 ip=$IP_ADDRESS1/24,gw=$GATEWAY"
 
-# 2つ目のIPアドレス設定（指定されている場合）
+# 2つ目のIPアドレス設定（ゲートウェイなし）
 if [ -n "$IP_ADDRESS2" ] && [ "$IP_ADDRESS2" != "" ]; then
     echo "2つ目のIPアドレスを設定中..."
-    ssh root@$TARGET_IP "qm set $VMID --ipconfig1 ip=$IP_ADDRESS2/24
+    ssh root@$TARGET_IP "qm set $VMID --ipconfig1 ip=$IP_ADDRESS2/24"
 fi
 
 ssh root@$TARGET_IP "qm set $VMID --nameserver $DNS"
