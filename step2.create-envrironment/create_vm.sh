@@ -46,6 +46,7 @@ MEMORY=$7
 
 # ノードのIPアドレスマッピング
 declare -A NODE_IPS=(
+    ["r760xs1"]="172.16.100.11"
     ["r760xs2"]="172.16.100.12"
     ["r760xs3"]="172.16.100.13"
     ["r760xs4"]="172.16.100.14"
@@ -55,7 +56,7 @@ declare -A NODE_IPS=(
 TARGET_IP=${NODE_IPS[$TARGET_NODE]}
 if [ -z "$TARGET_IP" ]; then
     echo "エラー: 不明なノード名: $TARGET_NODE"
-    echo "有効なノード: r760xs2, r760xs3, r760xs4, r760xs5"
+    echo "有効なノード: r760xs1,r760xs2, r760xs3, r760xs4, r760xs5"
     exit 1
 fi
 
