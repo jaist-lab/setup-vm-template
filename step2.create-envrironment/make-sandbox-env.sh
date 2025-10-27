@@ -2,6 +2,14 @@
 # create-sandbox-vms.sh
 # Usage: ./create_vm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
 
+# 確認プロンプト
+echo "Add hosts entries"
+read -p "Are you sure you want to continue? (yes/no): " CONFIRM     
+if [ "$CONFIRM" != "yes" ]; then
+    echo "Operation cancelled"
+    exit 0
+fi
+
 # control planes
 ./create_vm.sh 131 r760xs1 172.16.100.131 sandbox-master01 172.16.200.131 902
 ./create_vm.sh 132 r760xs2 172.16.100.132 sandbox-master02 172.16.200.132 902

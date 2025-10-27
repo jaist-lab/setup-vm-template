@@ -1,4 +1,13 @@
 #!/bin/bash
+
+# 確認プロンプト
+echo "Add hosts entries"
+read -p "Are you sure you want to continue? (yes/no): " CONFIRM     
+if [ "$CONFIRM" != "yes" ]; then
+    echo "Operation cancelled"
+    exit 0
+fi
+
 # create-production-vms.sh
 # Usage: ./create_vm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
 

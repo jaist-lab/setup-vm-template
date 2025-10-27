@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# 確認プロンプト
+echo "Add hosts entries"
+read -p "Are you sure you want to continue? (yes/no): " CONFIRM     
+if [ "$CONFIRM" != "yes" ]; then
+    echo "Operation cancelled"
+    exit 0
+fi
+
 # === r760xs1（172.16.100.11）のVM停止・削除 ===
 ssh root@172.16.100.11 "qm    stop 121 --timeout 30 || true"
 ssh root@172.16.100.11 "qm destroy 121 --purge"
