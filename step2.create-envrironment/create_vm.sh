@@ -88,7 +88,7 @@ ssh root@$TARGET_IP "qm destroy $VMID 2>/dev/null || true"
 
 # クローン作成
 echo "[2/6] テンプレート${TEMPLATE_ID}からクローン作成中..."
-qm clone $TEMPLATE_ID $VMID --name $VM_NAME --full 1 --storage $STORAGE --target $TARGET_NODE
+qm clone $TEMPLATE_ID $VMID --name $VM_NAME --full --storage $STORAGE --target $TARGET_NODE
 
 # 待機
 echo "[3/6] 設定の安定化待機中..."
