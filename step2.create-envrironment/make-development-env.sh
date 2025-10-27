@@ -3,7 +3,7 @@
 # Usage: ./create_vm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
 
 # 確認プロンプト
-echo "Add hosts entries"
+echo "Create development environment VMs"
 read -p "Are you sure you want to continue? (yes/no): " CONFIRM     
 if [ "$CONFIRM" != "yes" ]; then
     echo "Operation cancelled"

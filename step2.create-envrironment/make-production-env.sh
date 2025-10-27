@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 確認プロンプト
-echo "Add hosts entries"
+echo "Create Production environment VMs"
 read -p "Are you sure you want to continue? (yes/no): " CONFIRM     
 if [ "$CONFIRM" != "yes" ]; then
     echo "Operation cancelled"
