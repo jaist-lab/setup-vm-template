@@ -3,13 +3,13 @@
 # Usage: ./create_vm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
 
 # control planes
-./create_vm.sh 101 r760xs3 172.16.100.101 master01 172.16.200.101 901
-./create_vm.sh 102 r760xs4 172.16.100.102 master02 172.16.200.102 901
-./create_vm.sh 103 r760xs5 172.16.100.103 master03 172.16.200.103 901
+./create_vm.sh 101 r760xs1 172.16.100.101 master01 172.16.200.101 901
+./create_vm.sh 102 r760xs2 172.16.100.102 master02 172.16.200.102 901
+./create_vm.sh 103 r760xs3 172.16.100.103 master03 172.16.200.103 901
 
 # worker nodes
-./create_vm.sh 104 r760xs3 172.16.100.104 node01 172.16.200.104   901
-./create_vm.sh 105 r760xs4 172.16.100.105 node02 172.16.200.105   901
+./create_vm.sh 104 r760xs4 172.16.100.104 node01 172.16.200.104   901
+./create_vm.sh 105 r760xs5 172.16.100.105 node02 172.16.200.105   901
 
 # 各ノードのVM確認
 ssh root@r760xs1 "qm list | grep -E '101'"
