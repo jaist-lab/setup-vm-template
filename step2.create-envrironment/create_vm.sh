@@ -128,7 +128,7 @@ ssh root@$TARGET_IP "qm set $VMID --ipconfig0 ip=$IP_ADDRESS1/24,gw=$GATEWAY1"
 # 2つ目のIPアドレス設定（指定されている場合）
 if [ -n "$IP_ADDRESS2" ] && [ "$IP_ADDRESS2" != "" ]; then
     echo "2つ目のIPアドレスを設定中..."
-    ssh root@$TARGET_IP "qm set $VMID --ipconfig1 ip=$IP_ADDRESS2/24,gw=$GATEWAY2"
+    ssh root@$TARGET_IP "qm set $VMID --ipconfig1 ip=$IP_ADDRESS2/24
 fi
 
 ssh root@$TARGET_IP "qm set $VMID --nameserver $DNS"
