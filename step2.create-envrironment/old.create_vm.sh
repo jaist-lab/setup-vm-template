@@ -3,34 +3,24 @@
 # 使用方法の表示
 usage() {
     cat << EOF
-使用方法: $0 <VMID> <TARGET_NODE> <IP_ADDRESS1> <VM_NAME> [IP_ADDRESS2] [TEMPLATE_ID] [CORES] [MEMORY]
+使用方法: $0 <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
 
 引数:
   VMID         : 作成するVMのID (例: 101)
   TARGET_NODE  : VM作成先のノード (例: r760xs3)
-  IP_ADDRESS1  : VMに割り当てる1つ目のIPアドレス (例: 172.16.100.101)
+  IP_ADDRESS   : VMに割り当てるIPアドレス (例: 172.16.100.101)
   VM_NAME      : VMの名前 (例: master01)
-  IP_ADDRESS2  : VMに割り当てる2つ目のIPアドレス (オプション、例: 192.168.1.101)
   TEMPLATE_ID  : テンプレートID (デフォルト: 901)
   CORES        : CPUコア数 (デフォルト: テンプレートの設定を継承)
   MEMORY       : メモリサイズMB (デフォルト: テンプレートの設定を継承)
 
 例:
-  # IPアドレス1つの場合
   $0 101 r760xs3 172.16.100.101 master01
-
-  # IPアドレス2つの場合
-  $0 102 r760xs4 172.16.100.102 master02 192.168.1.102
-
-  # IPアドレス2つ + その他のパラメータ
-  $0 103 r760xs3 172.16.100.103 master03 192.168.1.103 901 8 65536
-
-  # IP_ADDRESS2を省略する場合（後続パラメータを指定）
-  $0 131 r760xs3 172.16.100.131 dev-node01 "" 902 4 32768
+  $0 102 r760xs4 172.16.100.102 master02 901 8 65536
+  $0 131 r760xs3 172.16.100.131 dev-node01 902
 
 設定値:
-  ゲートウェイ1: 172.16.100.1
-  ゲートウェイ2: 192.168.1.1 (IP_ADDRESS2指定時)
+  ゲートウェイ: 172.16.100.1
   DNS: 150.65.0.1
   Search Domain: jaist.ac.jp
   ユーザー: jaist-lab
@@ -48,12 +38,11 @@ fi
 # 引数の取得
 VMID=$1
 TARGET_NODE=$2
-IP_ADDRESS1=$3
+IP_ADDRESS=$3
 VM_NAME=$4
-IP_ADDRESS2=$5
-TEMPLATE_ID=${6:-901}
-CORES=$7
-MEMORY=$8
+TEMPLATE_ID=${5:-901}
+CORES=$6
+MEMORY=$7
 
 # ノードのIPアドレスマッピング
 declare -A NODE_IPS=(
@@ -67,13 +56,12 @@ declare -A NODE_IPS=(
 TARGET_IP=${NODE_IPS[$TARGET_NODE]}
 if [ -z "$TARGET_IP" ]; then
     echo "エラー: 不明なノード名: $TARGET_NODE"
-    echo "有効なノード: r760xs1, r760xs2, r760xs3, r760xs4, r760xs5"
+    echo "有効なノード: r760xs1,r760xs2, r760xs3, r760xs4, r760xs5"
     exit 1
 fi
 
 # 固定設定
-GATEWAY1="172.16.100.1"
-GATEWAY2="192.168.1.1"  # 2つ目のネットワーク用
+GATEWAY="172.16.100.1"
 DNS="150.65.0.1"
 SEARCH_DOMAIN="jaist.ac.jp"
 CI_USER="jaist-lab"
@@ -85,10 +73,7 @@ echo "VM作成スクリプト"
 echo "========================================="
 echo "VMID         : $VMID"
 echo "ターゲットノード : $TARGET_NODE ($TARGET_IP)"
-echo "IPアドレス1   : $IP_ADDRESS1/24"
-if [ -n "$IP_ADDRESS2" ] && [ "$IP_ADDRESS2" != "" ]; then
-    echo "IPアドレス2   : $IP_ADDRESS2/24"
-fi
+echo "IPアドレス    : $IP_ADDRESS/24"
 echo "VM名         : $VM_NAME"
 echo "テンプレート  : $TEMPLATE_ID"
 [ -n "$CORES" ] && echo "CPUコア      : $CORES"
@@ -111,15 +96,7 @@ sleep 30
 
 # Cloud-Init設定
 echo "[4/6] Cloud-Init設定を適用中..."
-# 1つ目のIPアドレス設定
-ssh root@$TARGET_IP "qm set $VMID --ipconfig0 ip=$IP_ADDRESS1/24,gw=$GATEWAY1"
-
-# 2つ目のIPアドレス設定（指定されている場合）
-if [ -n "$IP_ADDRESS2" ] && [ "$IP_ADDRESS2" != "" ]; then
-    echo "2つ目のIPアドレスを設定中..."
-    ssh root@$TARGET_IP "qm set $VMID --ipconfig1 ip=$IP_ADDRESS2/24,gw=$GATEWAY2"
-fi
-
+ssh root@$TARGET_IP "qm set $VMID --ipconfig0 ip=$IP_ADDRESS/24,gw=$GATEWAY"
 ssh root@$TARGET_IP "qm set $VMID --nameserver $DNS"
 ssh root@$TARGET_IP "qm set $VMID --searchdomain $SEARCH_DOMAIN"
 ssh root@$TARGET_IP "qm set $VMID --ciuser $CI_USER"
@@ -164,11 +141,8 @@ echo "✓ VM作成完了"
 echo "========================================="
 echo "VMID: $VMID"
 echo "ノード: $TARGET_NODE"
-echo "IPアドレス1: $IP_ADDRESS1"
-if [ -n "$IP_ADDRESS2" ] && [ "$IP_ADDRESS2" != "" ]; then
-    echo "IPアドレス2: $IP_ADDRESS2"
-fi
+echo "IPアドレス: $IP_ADDRESS"
 echo ""
 echo "SSH接続テスト（30秒後に実行推奨）:"
-echo "  ssh $CI_USER@$IP_ADDRESS1"
+echo "  ssh $CI_USER@$IP_ADDRESS"
 echo "========================================="
