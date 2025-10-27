@@ -1,15 +1,15 @@
 #!/bin/bash
-# create-development2-vms.sh
+# create-sandbox-vms.sh
 # Usage: ./create_vm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
 
 # control planes
-./create_vm.sh 131 r760xs1 172.16.100.131 dev-master01 902
-./create_vm.sh 132 r760xs2 172.16.100.132 dev-master02 902
-./create_vm.sh 133 r760xs3 172.16.100.133 dev-master03 902
+./create_vm.sh 131 r760xs1 172.16.100.131 sandbox-master01 902
+./create_vm.sh 132 r760xs2 172.16.100.132 sandbox-master02 902
+./create_vm.sh 133 r760xs3 172.16.100.133 sandbox-master03 902
 
 # worker nodes
-./create_vm.sh 134 r760xs4 172.16.100.131 dev-node01   902
-./create_vm.sh 135 r760xs5 172.16.100.132 dev-node02   902
+./create_vm.sh 134 r760xs4 172.16.100.134 sandbox-node21   902
+./create_vm.sh 135 r760xs5 172.16.100.135 sandbox-node22   902
 
 # 各ノードのVM確認
 ssh root@r760xs1 "qm list | grep -E '131'"

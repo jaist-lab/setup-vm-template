@@ -8,8 +8,8 @@
 ./create_vm.sh 123 r760xs3 172.16.100.123 dev-master03 902
 
 # worker nodes
-./create_vm.sh 124 r760xs4 172.16.100.131 dev-node01   902
-./create_vm.sh 125 r760xs5 172.16.100.132 dev-node02   902
+./create_vm.sh 124 r760xs4 172.16.100.124 dev-node01   902
+./create_vm.sh 125 r760xs5 172.16.100.125 dev-node02   902
 
 # 各ノードのVM確認
 ssh root@r760xs1 "qm list | grep -E '121'"
