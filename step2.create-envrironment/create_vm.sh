@@ -1,4 +1,17 @@
 #!/bin/bash -e
+# Usage: ./create_vm.sh <VMID> <TARGET_NODE> <IP_ADDRESS1> <VM_NAME> [IP_ADDRESS2] [TEMPLATE_ID] [CORES] [MEMORY]
+# VM作成スクリプト
+# Arguments:
+#   VMID         : 作成するVMのID (例: 101)
+#   TARGET_NODE  : VM作成先のノード (例: r760xs3)
+#   IP_ADDRESS1  : VMに割り当てる1つ目のIPアドレス (例:172.16.100.121)
+#   VM_NAME      : VMの名前 (例: dev-master01)
+#   IP_ADDRESS2  : VMに割り当てる2つ目のIPアドレス (オプション、例:172.16.200.121)  
+#   TEMPLATE_ID  : テンプレートID (デフォルト: 901)
+#   CORES        : CPUコア数 (デフォルト: テンプレートの設定を継承)
+#   MEMORY       : メモリサイズMB (デフォルト: テンプレートの設定を継承)    
+ßß
+
 
 # 使用方法の表示
 usage() {
