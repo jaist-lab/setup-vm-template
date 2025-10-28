@@ -27,26 +27,24 @@ sudo tee -a /etc/hosts << 'EOF'
 172.16.100.99  monitoring
 
 # Production  servers(VM)
-172.16.100.101  master01
-172.16.100.102  master02
-172.16.100.103  master03
-172.16.100.104  node01
-172.16.100.105  node02
+172.16.200.101  master01
+172.16.200.102  master02
+172.16.200.103  master03
+172.16.200.104  node01
+172.16.200.105  node02
 
-# Development 1 servers(VM)
-172.16.100.121  dev-master01
-172.16.100.122  dev-master02
-172.16.100.123  dev-master03
-172.16.100.124  dev-node01
-172.16.100.125  dev-node02
+# Development  servers(VM)
+172.16.200.121  dev-master01
+172.16.200.122  dev-master02
+172.16.200.123  dev-master03
+172.16.200.124  dev-node01
+172.16.200.125  dev-node02
 
-# Development 2 servers(VM)
-172.16.100.131  dev-master21
-172.16.100.132  dev-master22
-172.16.100.133  dev-master23
-172.16.100.134  dev-node21
-172.16.100.135  dev-node22
-
-
+# Sandbox servers(VM)
+172.16.200.131  sandbox-master01
+172.16.200.132  sandbox-master02
+172.16.200.133  sandbox-master03
+172.16.200.134  sandbox-node01
+172.16.200.135  sandbox-node02
 
 EOF
