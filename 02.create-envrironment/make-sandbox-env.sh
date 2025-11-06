@@ -16,8 +16,8 @@ fi
 ./create_vm.sh 133 r760xs3 172.16.100.133 sandbox-master03 172.16.200.133 902
 
 # worker nodes
-./create_vm.sh 134 r760xs4 172.16.100.134 sandbox-node21 172.16.200.134  902
-./create_vm.sh 135 r760xs5 172.16.100.135 sandbox-node22 172.16.200.135  902
+./create_vm.sh 134 r760xs4 172.16.100.134 sandbox-node01 172.16.200.134  902
+./create_vm.sh 135 r760xs5 172.16.100.135 sandbox-node02 172.16.200.135  902
 
 # 各ノードのVM確認
 ssh root@r760xs1 "qm list | grep -E '131'"
