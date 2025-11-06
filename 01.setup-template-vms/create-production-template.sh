@@ -11,7 +11,7 @@
 #    --name   "ubuntu-2404-production" \
 #    --cores  8 \
 #    --memory 128 \
-#    --disk   128
+#    --disk   64
 #--------------------------------------------
 
 # ベースVM ID
@@ -40,7 +40,7 @@ qm set 901 --cores 8
 echo "  - メモリを128GBに設定"
 qm set 901 --memory 131072
 
-echo "  - ディスクを128GBに拡張"
+echo "  - ディスクを64GBに拡張"
 qm resize 901 scsi0 64G
 
 echo -e "${GREEN}✓ VM 901 作成完了${NC}"
