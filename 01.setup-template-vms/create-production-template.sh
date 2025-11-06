@@ -41,7 +41,7 @@ echo "  - メモリを128GBに設定"
 qm set 901 --memory 131072
 
 echo "  - ディスクを128GBに拡張"
-qm resize 901 scsi0 128G
+qm resize 901 scsi0 64G
 
 echo -e "${GREEN}✓ VM 901 作成完了${NC}"
 echo ""
