@@ -1,6 +1,6 @@
 #!/bin/bash
 # create-development-vms.sh
-# Usage: ./create_vm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
+# Usage: ./create_nodevm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
 
 # 確認プロンプト
 echo "Create development environment VMs"
@@ -11,13 +11,13 @@ if [ "$CONFIRM" != "yes" ]; then
 fi
 
 # control planes
-./create_vm.sh 121 r760xs1 172.16.100.121 dev-master01 172.16.200.121 902
-./create_vm.sh 122 r760xs2 172.16.100.122 dev-master02 172.16.200.122 902
-./create_vm.sh 123 r760xs3 172.16.100.123 dev-master03 172.16.200.123 902
+./create_nodevm.sh 121 r760xs1 172.16.100.121 dev-master01 172.16.200.121 902
+./create_nodevm.sh 122 r760xs2 172.16.100.122 dev-master02 172.16.200.122 902
+./create_nodevm.sh 123 r760xs3 172.16.100.123 dev-master03 172.16.200.123 902
 
 # worker nodes
-./create_vm.sh 124 r760xs4 172.16.100.124 dev-node01 172.16.200.124 902
-./create_vm.sh 125 r760xs5 172.16.100.125 dev-node02 172.16.200.125 902
+./create_nodevm.sh 124 r760xs4 172.16.100.124 dev-node01 172.16.200.124 902
+./create_nodevm.sh 125 r760xs5 172.16.100.125 dev-node02 172.16.200.125 902
 
 # 各ノードのVM確認
 ssh root@r760xs1 "qm list | grep -E '121'"

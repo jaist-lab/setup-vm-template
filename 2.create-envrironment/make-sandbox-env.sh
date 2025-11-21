@@ -1,6 +1,6 @@
 #!/bin/bash
 # create-sandbox-vms.sh
-# Usage: ./create_vm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
+# Usage: ./create_nodevm.sh <VMID> <TARGET_NODE> <IP_ADDRESS> <VM_NAME> [TEMPLATE_ID] [CORES] [MEMORY]
 
 # 確認プロンプト
 echo "Create Sandbox environment VMs"
@@ -11,13 +11,13 @@ if [ "$CONFIRM" != "yes" ]; then
 fi
 
 # control planes
-./create_vm.sh 131 r760xs1 172.16.100.131 sandbox-master01 172.16.200.131 902
-./create_vm.sh 132 r760xs2 172.16.100.132 sandbox-master02 172.16.200.132 902
-./create_vm.sh 133 r760xs3 172.16.100.133 sandbox-master03 172.16.200.133 902
+./create_nodevm.sh 131 r760xs1 172.16.100.131 sandbox-master01 172.16.200.131 902
+./create_nodevm.sh 132 r760xs2 172.16.100.132 sandbox-master02 172.16.200.132 902
+./create_nodevm.sh 133 r760xs3 172.16.100.133 sandbox-master03 172.16.200.133 902
 
 # worker nodes
-./create_vm.sh 134 r760xs4 172.16.100.134 sandbox-node01 172.16.200.134  902
-./create_vm.sh 135 r760xs5 172.16.100.135 sandbox-node02 172.16.200.135  902
+./create_nodevm.sh 134 r760xs4 172.16.100.134 sandbox-node01 172.16.200.134  902
+./create_nodevm.sh 135 r760xs5 172.16.100.135 sandbox-node02 172.16.200.135  902
 
 # 各ノードのVM確認
 ssh root@r760xs1 "qm list | grep -E '131'"
