@@ -12,14 +12,14 @@ echo ""
 
 # Master ノード作成
 echo "=== Master ノード作成 ==="
-$SCRIPT_DIR/create-k8s-master.sh 901 101 master01 r760xs3 172.16.100.101 32
-$SCRIPT_DIR/create-k8s-master.sh 901 102 master02 r760xs4 172.16.100.102 32
-$SCRIPT_DIR/create-k8s-master.sh 901 103 master03 r760xs5 172.16.100.103 32
+$SCRIPT_DIR/create-k8s-master.sh 900 101 master01 r760xs3 172.16.100.101 32
+$SCRIPT_DIR/create-k8s-master.sh 900 102 master02 r760xs4 172.16.100.102 32
+$SCRIPT_DIR/create-k8s-master.sh 900 103 master03 r760xs5 172.16.100.103 32
 
 echo ""
 echo "=== Worker ノード作成 ==="
-$SCRIPT_DIR/create-k8s-worker.sh 901 104 node01 r760xs4 172.16.100.104 16 128
-$SCRIPT_DIR/create-k8s-worker.sh 901 105 node02 r760xs5 172.16.100.105 16 128
+$SCRIPT_DIR/create-k8s-worker.sh 900 104 node01 r760xs4 172.16.100.104 16 128
+$SCRIPT_DIR/create-k8s-worker.sh 900 105 node02 r760xs5 172.16.100.105 16 128
 
 echo ""
 echo "========================================="
