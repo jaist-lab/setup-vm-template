@@ -8,7 +8,7 @@ DEFAULT_NODE="r760xs2"
 DEFAULT_CPU_CORES=8
 DEFAULT_MEMORY_GB=16
 DEFAULT_DISK_GB=64
-DEFAULT_ETCD_DISK_GB=16  # 0の場合はetcdディスクを作成しない
+DEFAULT_ETCD_DISK_GB=0  # 0の場合はetcdディスクを作成しない
 
 # 使用方法を表示する関数
 usage() {
