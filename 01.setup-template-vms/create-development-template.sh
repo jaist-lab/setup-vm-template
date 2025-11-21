@@ -11,6 +11,7 @@
 #    --name   "ubuntu-2404-development" \
 #    --cores  2 \
 #    --memory 32 \
+#    --etcd-disk 16 \
 #    --disk   64
 #--------------------------------------------
 
