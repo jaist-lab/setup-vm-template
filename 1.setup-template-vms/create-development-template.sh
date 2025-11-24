@@ -35,8 +35,8 @@ qm clone $BASE_VMID 902 --name ubuntu-2404-development-template --full
 sleep 10
 
 # CPU、メモリ、ディスク設定を変更
-echo "  - CPUコア数を2に設定"
-qm set 902 --cores 2
+echo "  - CPUコア数を4に設定"
+qm set 902 --cores 4
 
 echo "  - メモリを32GBに設定"
 qm set 902 --memory 32768
