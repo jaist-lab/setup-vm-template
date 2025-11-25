@@ -1,5 +1,5 @@
 #!/bin/bash
-# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト
+# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（完全修正版）
 
 # ===================================
 # エラーハンドリング設定
@@ -28,8 +28,8 @@ usage() {
 
 オプション:
     --etcd-disk GB          etcd専用ディスクサイズ(GB) (デフォルト: 0=作成しない)
-    --gateway IP            デフォルトゲートウェイ (デフォルト: 172.16.100.1)
-    --nameserver IP         DNSサーバー (デフォルト: 150.65.0.1)
+    --gateway IP            デフォルトゲートウェイ (デフォルト: 172.16.100.254)
+    --nameserver IP         DNSサーバー (デフォルト: 172.16.100.11)
     -h, --help              このヘルプを表示
 
 例:
@@ -176,6 +176,9 @@ fi
 # メモリをMB単位に変換
 MEMORY_MB=$((MEMORY_GB * 1024))
 
+# 現在のノード名を取得
+CURRENT_NODE=$(hostname -s)
+
 # ===================================
 # VM作成開始
 # ===================================
@@ -199,6 +202,25 @@ EOF
 # ステップ1: テンプレートからクローン
 # ===================================
 print_step "ステップ1: テンプレートからクローン"
+
+# クロスノードクローン時の既存設定ファイルクリーンアップ
+if [ "$TARGET_NODE" != "$CURRENT_NODE" ]; then
+    echo "クロスノードクローンを検出: ${CURRENT_NODE} → ${TARGET_NODE}"
+    
+    # 元ノードの設定ファイルを削除
+    rm -f "/etc/pve/nodes/${CURRENT_NODE}/qemu-server/${VM_ID}.conf" 2>/dev/null || true
+    
+    # ターゲットノードの設定ファイルを削除
+    ssh "$TARGET_NODE" "rm -f /etc/pve/nodes/${TARGET_NODE}/qemu-server/${VM_ID}.conf" 2>/dev/null || true
+    
+    # グローバル設定ファイルを削除
+    rm -f "/etc/pve/qemu-server/${VM_ID}.conf" 2>/dev/null || true
+    
+    echo "✓ 既存設定ファイルのクリーンアップ完了"
+    sleep 1
+fi
+
+# クローン実行
 qm clone "$TEMPLATE_ID" "$VM_ID" \
     --name "$VM_NAME" \
     --full \
@@ -222,9 +244,17 @@ echo "✓ CPU: ${CPU_CORES}コア"
 qm set "$VM_ID" --memory "$MEMORY_MB" --balloon "$MEMORY_MB" || error_exit "メモリ設定に失敗しました"
 echo "✓ メモリ: ${MEMORY_GB}GB"
 
-# システムディスクのリサイズ
-qm resize "$VM_ID" scsi0 "${DISK_GB}G" || error_exit "ディスクリサイズに失敗しました"
-echo "✓ システムディスク: ${DISK_GB}GB"
+# システムディスクのリサイズ（必要な場合のみ）
+CURRENT_DISK_SIZE=$(qm config "$VM_ID" | grep "^scsi0:" | grep -oP 'size=\K[0-9]+G' || echo "")
+
+if [ -z "$CURRENT_DISK_SIZE" ]; then
+    echo "✓ システムディスク: ${DISK_GB}GB (サイズ情報取得不可 - スキップ)"
+elif [ "$CURRENT_DISK_SIZE" != "${DISK_GB}G" ]; then
+    qm resize "$VM_ID" scsi0 "${DISK_GB}G" || error_exit "ディスクリサイズに失敗しました"
+    echo "✓ システムディスク: ${DISK_GB}GB (リサイズ実行)"
+else
+    echo "✓ システムディスク: ${DISK_GB}GB (既に目標サイズ)"
+fi
 
 # ===================================
 # ステップ3: etcdディスク追加 (必要な場合のみ)
@@ -252,9 +282,9 @@ fi
 # ===================================
 print_step "ステップ4: Cloud-Init設定"
 
-# Cloud-Init用ストレージ設定 (vm-storage/Ceph RBD)
-qm set "$VM_ID" --ide2 vm-storage:cloudinit || error_exit "Cloud-Initストレージ設定に失敗しました"
-echo "✓ Cloud-Initストレージ: vm-storage (Ceph RBD)"
+# Cloud-Init用ドライブを追加
+qm set "$VM_ID" --ide2 vm-storage:cloudinit || error_exit "Cloud-Initドライブ追加に失敗しました"
+echo "✓ Cloud-Initドライブ追加: vm-storage (Ceph RBD)"
 
 # ユーザー設定
 qm set "$VM_ID" --ciuser jaist-lab || error_exit "ユーザー設定に失敗しました"
@@ -319,7 +349,7 @@ $([ "$ETCD_DISK_GB" -gt 0 ] && echo "etcdディスク: ${ETCD_DISK_GB}GB (local-
 vmbr0: ${IP_ADDRESS0}/24 (管理ネットワーク)
 vmbr100: ${IP_ADDRESS1}/24 (Cephネットワーク)
 ゲートウェイ: ${GATEWAY}
-DNS: ${NAMESERVER}
+DNS: $NAMESERVER
 
 === Cloud-Init設定 ===
 ユーザー: jaist-lab
