@@ -1,5 +1,5 @@
 #!/bin/bash
-# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（クロスノード対応完全版）
+# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（SSH修正版）
 
 # ===================================
 # エラーハンドリング設定
@@ -66,14 +66,19 @@ print_step() {
     echo "========================================"
 }
 
-# qmコマンドをターゲットノードで実行する関数
+# qmコマンドをターゲットノードで実行する関数（修正版）
 qm_exec() {
     local vmid="$1"
     shift
     
     if [ "$TARGET_NODE" != "$CURRENT_NODE" ]; then
         # クロスノードの場合はSSH経由で実行
-        ssh "$TARGET_NODE" "qm $*"
+        # 各引数を適切にエスケープしてSSH経由で実行
+        local escaped_args=""
+        for arg in "$@"; do
+            escaped_args="$escaped_args $(printf '%q' "$arg")"
+        done
+        ssh "$TARGET_NODE" "qm$escaped_args"
     else
         # 同一ノードの場合はローカル実行
         qm "$@"
