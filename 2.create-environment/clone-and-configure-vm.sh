@@ -1,5 +1,5 @@
 #!/bin/bash
-# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（完全修正版）
+# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（クロスノード対応完全版）
 
 # ===================================
 # エラーハンドリング設定
@@ -64,6 +64,20 @@ print_step() {
     echo "========================================"
     echo ">>> $1"
     echo "========================================"
+}
+
+# qmコマンドをターゲットノードで実行する関数
+qm_exec() {
+    local vmid="$1"
+    shift
+    
+    if [ "$TARGET_NODE" != "$CURRENT_NODE" ]; then
+        # クロスノードの場合はSSH経由で実行
+        ssh "$TARGET_NODE" "qm $*"
+    else
+        # 同一ノードの場合はローカル実行
+        qm "$@"
+    fi
 }
 
 # ===================================
@@ -273,21 +287,25 @@ sleep 2
 # ===================================
 print_step "ステップ2: リソース設定変更"
 
-# CPU設定
-qm set "$VM_ID" --cores "$CPU_CORES" || error_exit "CPU設定に失敗しました"
+# CPU設定（ターゲットノードで実行）
+qm_exec "$VM_ID" set "$VM_ID" --cores "$CPU_CORES" || error_exit "CPU設定に失敗しました"
 echo "✓ CPU: ${CPU_CORES}コア"
 
-# メモリ設定
-qm set "$VM_ID" --memory "$MEMORY_MB" --balloon "$MEMORY_MB" || error_exit "メモリ設定に失敗しました"
+# メモリ設定（ターゲットノードで実行）
+qm_exec "$VM_ID" set "$VM_ID" --memory "$MEMORY_MB" --balloon "$MEMORY_MB" || error_exit "メモリ設定に失敗しました"
 echo "✓ メモリ: ${MEMORY_GB}GB"
 
 # システムディスクのリサイズ（必要な場合のみ）
-CURRENT_DISK_SIZE=$(qm config "$VM_ID" | grep "^scsi0:" | grep -oP 'size=\K[0-9]+G' || echo "")
+if [ "$TARGET_NODE" != "$CURRENT_NODE" ]; then
+    CURRENT_DISK_SIZE=$(ssh "$TARGET_NODE" "qm config $VM_ID | grep '^scsi0:' | grep -oP 'size=\K[0-9]+G'" || echo "")
+else
+    CURRENT_DISK_SIZE=$(qm config "$VM_ID" | grep "^scsi0:" | grep -oP 'size=\K[0-9]+G' || echo "")
+fi
 
 if [ -z "$CURRENT_DISK_SIZE" ]; then
     echo "✓ システムディスク: ${DISK_GB}GB (サイズ情報取得不可 - スキップ)"
 elif [ "$CURRENT_DISK_SIZE" != "${DISK_GB}G" ]; then
-    qm resize "$VM_ID" scsi0 "${DISK_GB}G" || error_exit "ディスクリサイズに失敗しました"
+    qm_exec "$VM_ID" resize "$VM_ID" scsi0 "${DISK_GB}G" || error_exit "ディスクリサイズに失敗しました"
     echo "✓ システムディスク: ${DISK_GB}GB (リサイズ実行)"
 else
     echo "✓ システムディスク: ${DISK_GB}GB (既に目標サイズ)"
@@ -299,12 +317,18 @@ fi
 if [ "$ETCD_DISK_GB" -gt 0 ]; then
     print_step "ステップ3: etcdディスク追加"
     
-    # local-nvmeストレージが存在するか確認
-    if ! pvesm status | grep -q "local-nvme"; then
+    # local-nvmeストレージが存在するか確認（ターゲットノードで）
+    if [ "$TARGET_NODE" != "$CURRENT_NODE" ]; then
+        STORAGE_CHECK=$(ssh "$TARGET_NODE" "pvesm status | grep -q 'local-nvme' && echo 'exists' || echo 'notfound'")
+    else
+        STORAGE_CHECK=$(pvesm status | grep -q "local-nvme" && echo "exists" || echo "notfound")
+    fi
+    
+    if [ "$STORAGE_CHECK" != "exists" ]; then
         echo "警告: local-nvmeストレージが存在しません。スキップします。" >&2
     else
-        # etcdディスクを追加
-        qm set "$VM_ID" \
+        # etcdディスクを追加（ターゲットノードで実行）
+        qm_exec "$VM_ID" set "$VM_ID" \
             --scsi1 "local-nvme:${ETCD_DISK_GB},format=raw,cache=writeback,discard=on,ssd=1" \
             || error_exit "etcdディスク追加に失敗しました"
         echo "✓ etcdディスク追加: ${ETCD_DISK_GB}GB (local-nvme, /dev/sdb)"
@@ -319,22 +343,22 @@ fi
 # ===================================
 print_step "ステップ4: Cloud-Init設定"
 
-# Cloud-Init用ドライブを追加
-qm set "$VM_ID" --ide2 vm-storage:cloudinit || error_exit "Cloud-Initドライブ追加に失敗しました"
+# Cloud-Init用ドライブを追加（ターゲットノードで実行）
+qm_exec "$VM_ID" set "$VM_ID" --ide2 vm-storage:cloudinit || error_exit "Cloud-Initドライブ追加に失敗しました"
 echo "✓ Cloud-Initドライブ追加: vm-storage (Ceph RBD)"
 
-# ユーザー設定
-qm set "$VM_ID" --ciuser jaist-lab || error_exit "ユーザー設定に失敗しました"
+# ユーザー設定（ターゲットノードで実行）
+qm_exec "$VM_ID" set "$VM_ID" --ciuser jaist-lab || error_exit "ユーザー設定に失敗しました"
 echo "✓ ユーザー: jaist-lab"
 
-# パスワード設定
-qm set "$VM_ID" --cipassword "jaileon02" || error_exit "パスワード設定に失敗しました"
+# パスワード設定（ターゲットノードで実行）
+qm_exec "$VM_ID" set "$VM_ID" --cipassword "jaileon02" || error_exit "パスワード設定に失敗しました"
 echo "✓ パスワード: ********"
 
-# SSHキー設定（既存のSSH公開鍵を使用）
+# SSHキー設定（ターゲットノードで実行）
 SSH_KEY_PATH="/root/.ssh/id_rsa.pub"
 if [ -f "$SSH_KEY_PATH" ]; then
-    qm set "$VM_ID" --sshkeys "$SSH_KEY_PATH" || error_exit "SSHキー設定に失敗しました"
+    qm_exec "$VM_ID" set "$VM_ID" --sshkeys "$SSH_KEY_PATH" || error_exit "SSHキー設定に失敗しました"
     echo "✓ SSHキー: $SSH_KEY_PATH"
 else
     echo "警告: SSH公開鍵が見つかりません ($SSH_KEY_PATH)" >&2
@@ -345,23 +369,23 @@ fi
 # ===================================
 print_step "ステップ5: ネットワーク設定"
 
-# vmbr0 (管理ネットワーク) の設定
-qm set "$VM_ID" --ipconfig0 "ip=${IP_ADDRESS0}/24,gw=${GATEWAY}" || error_exit "vmbr0ネットワーク設定に失敗しました"
+# vmbr0 (管理ネットワーク) の設定（ターゲットノードで実行）
+qm_exec "$VM_ID" set "$VM_ID" --ipconfig0 "ip=${IP_ADDRESS0}/24,gw=${GATEWAY}" || error_exit "vmbr0ネットワーク設定に失敗しました"
 echo "✓ vmbr0: ${IP_ADDRESS0}/24, GW: ${GATEWAY}"
 
-# vmbr100 (Cephネットワーク) の設定
-qm set "$VM_ID" --ipconfig1 "ip=${IP_ADDRESS1}/24" || error_exit "vmbr100ネットワーク設定に失敗しました"
+# vmbr100 (Cephネットワーク) の設定（ターゲットノードで実行）
+qm_exec "$VM_ID" set "$VM_ID" --ipconfig1 "ip=${IP_ADDRESS1}/24" || error_exit "vmbr100ネットワーク設定に失敗しました"
 echo "✓ vmbr100: ${IP_ADDRESS1}/24"
 
-# DNS設定
-qm set "$VM_ID" --nameserver "$NAMESERVER" || error_exit "DNS設定に失敗しました"
+# DNS設定（ターゲットノードで実行）
+qm_exec "$VM_ID" set "$VM_ID" --nameserver "$NAMESERVER" || error_exit "DNS設定に失敗しました"
 echo "✓ DNS: $NAMESERVER"
 
 # ===================================
 # ステップ6: 起動順序設定
 # ===================================
 print_step "ステップ6: 起動順序設定"
-qm set "$VM_ID" --boot "order=scsi0;net0" || error_exit "起動順序設定に失敗しました"
+qm_exec "$VM_ID" set "$VM_ID" --boot "order=scsi0;net0" || error_exit "起動順序設定に失敗しました"
 echo "✓ 起動順序: scsi0 → net0"
 
 # ===================================
