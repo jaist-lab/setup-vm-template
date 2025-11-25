@@ -1,5 +1,5 @@
 #!/bin/bash
-# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（Cloud-Init確認機能追加版）
+# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（RBDイメージ確認機能追加版）
 
 # ===================================
 # エラーハンドリング設定
@@ -95,6 +95,18 @@ qm_config() {
     else
         # 同一ノードの場合はローカル実行
         qm config "$vmid"
+    fi
+}
+
+# RBDイメージの存在確認関数
+check_rbd_image() {
+    local pool="$1"
+    local image="$2"
+    
+    if rbd ls "$pool" 2>/dev/null | grep -q "^${image}$"; then
+        echo "exists"
+    else
+        echo "notfound"
     fi
 }
 
@@ -357,38 +369,57 @@ fi
 # ===================================
 print_step "ステップ4: Cloud-Init設定"
 
-# 既存のCloud-Initドライブを確認
+# VM設定上の既存Cloud-Initドライブを確認
 EXISTING_CLOUDINIT=$(qm_config "$VM_ID" | grep -E "^(ide[0-9]|scsi[0-9]).*cloudinit" || echo "")
 
-if [ -n "$EXISTING_CLOUDINIT" ]; then
+# RBDイメージの存在確認
+CLOUDINIT_IMAGE_NAME="vm-${VM_ID}-cloudinit"
+RBD_IMAGE_CHECK=$(check_rbd_image "vm-storage" "$CLOUDINIT_IMAGE_NAME")
+
+# VM設定またはRBDイメージに既存Cloud-Initが存在する場合
+if [ -n "$EXISTING_CLOUDINIT" ] || [ "$RBD_IMAGE_CHECK" == "exists" ]; then
     echo ""
     echo "========================================" >&2
-    echo "警告: Cloud-Initドライブが既に存在します" >&2
+    echo "警告: Cloud-Init関連リソースが既に存在します" >&2
     echo "========================================" >&2
-    echo "既存Cloud-Init情報:" >&2
-    echo "$EXISTING_CLOUDINIT" >&2
+    
+    if [ -n "$EXISTING_CLOUDINIT" ]; then
+        echo "VM設定上のCloud-Init:" >&2
+        echo "$EXISTING_CLOUDINIT" >&2
+    fi
+    
+    if [ "$RBD_IMAGE_CHECK" == "exists" ]; then
+        echo "Ceph RBDイメージ: vm-storage/$CLOUDINIT_IMAGE_NAME" >&2
+    fi
+    
     echo "" >&2
     
     # 削除確認
-    read -p "既存のCloud-Initドライブを削除して再作成しますか? (yes/no): " -r CLOUDINIT_REPLY
+    read -p "既存のCloud-Init関連リソースを削除して再作成しますか? (yes/no): " -r CLOUDINIT_REPLY
     echo ""
     
     if [[ $CLOUDINIT_REPLY =~ ^[Yy][Ee][Ss]$ ]] || [[ $CLOUDINIT_REPLY =~ ^[Yy]$ ]]; then
-        # 既存Cloud-Initドライブのデバイス名を抽出（例: ide0, ide2など）
-        CLOUDINIT_DEVICE=$(echo "$EXISTING_CLOUDINIT" | grep -oP '^[^:]+')
+        # VM設定からCloud-Initドライブを削除
+        if [ -n "$EXISTING_CLOUDINIT" ]; then
+            CLOUDINIT_DEVICE=$(echo "$EXISTING_CLOUDINIT" | grep -oP '^[^:]+')
+            echo "VM設定からCloud-Initドライブ ($CLOUDINIT_DEVICE) を削除中..." >&2
+            qm_exec "$VM_ID" set "$VM_ID" --delete "$CLOUDINIT_DEVICE" || error_exit "Cloud-Initドライブ削除に失敗しました"
+            echo "✓ VM設定からCloud-Initドライブ削除完了" >&2
+            sleep 1
+        fi
         
-        echo "既存Cloud-Initドライブ ($CLOUDINIT_DEVICE) を削除中..." >&2
-        qm_exec "$VM_ID" set "$VM_ID" --delete "$CLOUDINIT_DEVICE" || error_exit "Cloud-Initドライブ削除に失敗しました"
-        echo "✓ 既存Cloud-Initドライブ削除完了" >&2
+        # RBDイメージを削除
+        if [ "$RBD_IMAGE_CHECK" == "exists" ]; then
+            echo "Ceph RBDイメージを削除中: vm-storage/$CLOUDINIT_IMAGE_NAME" >&2
+            rbd rm "vm-storage/$CLOUDINIT_IMAGE_NAME" || error_exit "RBDイメージ削除に失敗しました"
+            echo "✓ RBDイメージ削除完了" >&2
+            sleep 1
+        fi
+        
         echo "" >&2
-        
-        # 削除後、少し待機
-        sleep 1
     else
-        echo "既存のCloud-Initドライブを使用します" >&2
-        echo "✓ Cloud-Initドライブ: 既存のものを使用"
-        
-        # 既存ドライブを使用する場合は、ユーザー設定などは継続
+        echo "既存のCloud-Initリソースを使用します" >&2
+        echo "✓ Cloud-Init: 既存リソースを使用"
         SKIP_CLOUDINIT_CREATE=true
     fi
 fi
