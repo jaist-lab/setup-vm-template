@@ -1,5 +1,5 @@
 #!/bin/bash
-# create-sandbox-cluster.sh - Sandbox環境のKubernetesクラスタを作成
+# create-sbx-cluster.sh - Sandbox環境のKubernetesクラスタを作成
 
 # ===================================
 # スクリプト設定
@@ -43,7 +43,7 @@ echo ">>> Sandbox-Master01 作成中..."
 "$CLONE_SCRIPT" \
     --template-id "$TEMPLATE_ID" \
     --vm-id 131 \
-    --vm-name "sandbox-master01" \
+    --vm-name "sbx-master01" \
     --target-node "r760xs1" \
     --ip0 "172.16.100.131" \
     --ip1 "172.16.200.131" \
@@ -58,7 +58,7 @@ echo ">>> Sandbox-Master02 作成中..."
 "$CLONE_SCRIPT" \
     --template-id "$TEMPLATE_ID" \
     --vm-id 132 \
-    --vm-name "sandbox-master02" \
+    --vm-name "sbx-master02" \
     --target-node "r760xs2" \
     --ip0 "172.16.100.132" \
     --ip1 "172.16.200.132" \
@@ -73,7 +73,7 @@ echo ">>> Sandbox-Master03 作成中..."
 "$CLONE_SCRIPT" \
     --template-id "$TEMPLATE_ID" \
     --vm-id 133 \
-    --vm-name "sandbox-master03" \
+    --vm-name "sbx-master03" \
     --target-node "r760xs3" \
     --ip0 "172.16.100.133" \
     --ip1 "172.16.200.133" \
@@ -99,7 +99,7 @@ echo ">>> Sandbox-Node01 作成中..."
 "$CLONE_SCRIPT" \
     --template-id "$TEMPLATE_ID" \
     --vm-id 134 \
-    --vm-name "sandbox-node01" \
+    --vm-name "sbx-node01" \
     --target-node "r760xs4" \
     --ip0 "172.16.100.134" \
     --ip1 "172.16.200.134" \
@@ -113,7 +113,7 @@ echo ">>> Sandbox-Node02 作成中..."
 "$CLONE_SCRIPT" \
     --template-id "$TEMPLATE_ID" \
     --vm-id 135 \
-    --vm-name "sandbox-node02" \
+    --vm-name "sbx-node02" \
     --target-node "r760xs5" \
     --ip0 "172.16.100.135" \
     --ip1 "172.16.200.135" \
@@ -134,13 +134,13 @@ echo "========================================="
 echo ""
 echo "=== 作成されたVM一覧 ==="
 echo "Master ノード:"
-echo "  - VM 131: sandbox-master01 (r760xs1) - 172.16.100.131"
-echo "  - VM 132: sandbox-master02 (r760xs2) - 172.16.100.132"
-echo "  - VM 133: sandbox-master03 (r760xs3) - 172.16.100.133"
+echo "  - VM 131: sbx-master01 (r760xs1) - 172.16.100.131"
+echo "  - VM 132: sbx-master02 (r760xs2) - 172.16.100.132"
+echo "  - VM 133: sbx-master03 (r760xs3) - 172.16.100.133"
 echo ""
 echo "Worker ノード:"
-echo "  - VM 134: sandbox-node01 (r760xs4) - 172.16.100.134"
-echo "  - VM 135: sandbox-node02 (r760xs5) - 172.16.100.135"
+echo "  - VM 134: sbx-node01 (r760xs4) - 172.16.100.134"
+echo "  - VM 135: sbx-node02 (r760xs5) - 172.16.100.135"
 echo ""
 echo "=== 次のステップ ==="
 echo "1. 全VM起動:"
@@ -150,7 +150,7 @@ echo "2. 起動状態確認:"
 echo "   for vmid in 131 132 133 134 135; do echo \"VM \$vmid:\"; qm status \$vmid; done"
 echo ""
 echo "3. SSH接続確認:"
-echo "   ssh jaist-lab@172.16.100.131  # sandbox-master01"
+echo "   ssh jaist-lab@172.16.100.131  # sbx-master01"
 echo ""
 echo "4. etcdディスク確認 (Masterノードのみ):"
 echo "   ssh jaist-lab@172.16.100.131 'df -h | grep etcd'"
