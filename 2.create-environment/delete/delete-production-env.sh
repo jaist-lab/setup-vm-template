@@ -8,6 +8,7 @@ if [ "$CONFIRM" != "yes" ]; then
     exit 0
 fi
 
+
 # === r760xs1（172.16.100.11）のVM停止・削除 ===
 ssh root@172.16.100.11 "qm    stop 101 --timeout 30 || true"
 ssh root@172.16.100.11 "qm destroy 101 --purge"
