@@ -1,5 +1,5 @@
 #!/bin/bash
-# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（SSH修正版）
+# clone-and-configure-vm.sh - テンプレートからVMをクローンして設定する共通スクリプト（Cloud-Init確認機能追加版）
 
 # ===================================
 # エラーハンドリング設定
@@ -66,7 +66,7 @@ print_step() {
     echo "========================================"
 }
 
-# qmコマンドをターゲットノードで実行する関数（修正版）
+# qmコマンドをターゲットノードで実行する関数
 qm_exec() {
     local vmid="$1"
     shift
@@ -82,6 +82,19 @@ qm_exec() {
     else
         # 同一ノードの場合はローカル実行
         qm "$@"
+    fi
+}
+
+# qm configコマンドをターゲットノードで実行する関数
+qm_config() {
+    local vmid="$1"
+    
+    if [ "$TARGET_NODE" != "$CURRENT_NODE" ]; then
+        # クロスノードの場合はSSH経由で実行
+        ssh "$TARGET_NODE" "qm config $vmid"
+    else
+        # 同一ノードの場合はローカル実行
+        qm config "$vmid"
     fi
 }
 
@@ -301,11 +314,7 @@ qm_exec "$VM_ID" set "$VM_ID" --memory "$MEMORY_MB" --balloon "$MEMORY_MB" || er
 echo "✓ メモリ: ${MEMORY_GB}GB"
 
 # システムディスクのリサイズ（必要な場合のみ）
-if [ "$TARGET_NODE" != "$CURRENT_NODE" ]; then
-    CURRENT_DISK_SIZE=$(ssh "$TARGET_NODE" "qm config $VM_ID | grep '^scsi0:' | grep -oP 'size=\K[0-9]+G'" || echo "")
-else
-    CURRENT_DISK_SIZE=$(qm config "$VM_ID" | grep "^scsi0:" | grep -oP 'size=\K[0-9]+G' || echo "")
-fi
+CURRENT_DISK_SIZE=$(qm_config "$VM_ID" | grep "^scsi0:" | grep -oP 'size=\K[0-9]+G' || echo "")
 
 if [ -z "$CURRENT_DISK_SIZE" ]; then
     echo "✓ システムディスク: ${DISK_GB}GB (サイズ情報取得不可 - スキップ)"
@@ -348,9 +357,47 @@ fi
 # ===================================
 print_step "ステップ4: Cloud-Init設定"
 
-# Cloud-Init用ドライブを追加（ターゲットノードで実行）
-qm_exec "$VM_ID" set "$VM_ID" --ide2 vm-storage:cloudinit || error_exit "Cloud-Initドライブ追加に失敗しました"
-echo "✓ Cloud-Initドライブ追加: vm-storage (Ceph RBD)"
+# 既存のCloud-Initドライブを確認
+EXISTING_CLOUDINIT=$(qm_config "$VM_ID" | grep -E "^(ide[0-9]|scsi[0-9]).*cloudinit" || echo "")
+
+if [ -n "$EXISTING_CLOUDINIT" ]; then
+    echo ""
+    echo "========================================" >&2
+    echo "警告: Cloud-Initドライブが既に存在します" >&2
+    echo "========================================" >&2
+    echo "既存Cloud-Init情報:" >&2
+    echo "$EXISTING_CLOUDINIT" >&2
+    echo "" >&2
+    
+    # 削除確認
+    read -p "既存のCloud-Initドライブを削除して再作成しますか? (yes/no): " -r CLOUDINIT_REPLY
+    echo ""
+    
+    if [[ $CLOUDINIT_REPLY =~ ^[Yy][Ee][Ss]$ ]] || [[ $CLOUDINIT_REPLY =~ ^[Yy]$ ]]; then
+        # 既存Cloud-Initドライブのデバイス名を抽出（例: ide0, ide2など）
+        CLOUDINIT_DEVICE=$(echo "$EXISTING_CLOUDINIT" | grep -oP '^[^:]+')
+        
+        echo "既存Cloud-Initドライブ ($CLOUDINIT_DEVICE) を削除中..." >&2
+        qm_exec "$VM_ID" set "$VM_ID" --delete "$CLOUDINIT_DEVICE" || error_exit "Cloud-Initドライブ削除に失敗しました"
+        echo "✓ 既存Cloud-Initドライブ削除完了" >&2
+        echo "" >&2
+        
+        # 削除後、少し待機
+        sleep 1
+    else
+        echo "既存のCloud-Initドライブを使用します" >&2
+        echo "✓ Cloud-Initドライブ: 既存のものを使用"
+        
+        # 既存ドライブを使用する場合は、ユーザー設定などは継続
+        SKIP_CLOUDINIT_CREATE=true
+    fi
+fi
+
+# Cloud-Init用ドライブを追加（既存がない、または削除した場合のみ）
+if [ -z "$SKIP_CLOUDINIT_CREATE" ]; then
+    qm_exec "$VM_ID" set "$VM_ID" --ide2 vm-storage:cloudinit || error_exit "Cloud-Initドライブ追加に失敗しました"
+    echo "✓ Cloud-Initドライブ追加: vm-storage (Ceph RBD)"
+fi
 
 # ユーザー設定（ターゲットノードで実行）
 qm_exec "$VM_ID" set "$VM_ID" --ciuser jaist-lab || error_exit "ユーザー設定に失敗しました"
