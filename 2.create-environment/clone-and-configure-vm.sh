@@ -28,8 +28,8 @@ usage() {
 
 オプション:
     --etcd-disk GB          etcd専用ディスクサイズ(GB) (デフォルト: 0=作成しない)
-    --gateway IP            デフォルトゲートウェイ (デフォルト: 172.16.100.254)
-    --nameserver IP         DNSサーバー (デフォルト: 172.16.100.11)
+    --gateway IP            デフォルトゲートウェイ (デフォルト: 172.16.100.1)
+    --nameserver IP         DNSサーバー (デフォルト: 150.65.0.1)
     -h, --help              このヘルプを表示
 
 例:
@@ -168,9 +168,46 @@ if ! qm config "$TEMPLATE_ID" | grep -q "template: 1"; then
     error_exit "VM ID $TEMPLATE_ID はテンプレートではありません"
 fi
 
-# 既存VMの確認
+# ===================================
+# 既存VMの確認と削除処理
+# ===================================
 if qm status "$VM_ID" &>/dev/null; then
-    error_exit "VM ID $VM_ID は既に存在します"
+    echo ""
+    echo "========================================" >&2
+    echo "警告: VM ID $VM_ID は既に存在します" >&2
+    echo "========================================" >&2
+    
+    # VM情報を表示
+    echo "既存VM情報:" >&2
+    qm config "$VM_ID" | grep -E "^(name|cores|memory|net0|net1):" >&2
+    echo "" >&2
+    
+    # 削除確認
+    read -p "このVMを削除して再作成しますか? (yes/no): " -r REPLY
+    echo ""
+    
+    if [[ $REPLY =~ ^[Yy][Ee][Ss]$ ]] || [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "VM ID $VM_ID を削除中..." >&2
+        
+        # VMが起動中の場合は停止
+        VM_STATUS=$(qm status "$VM_ID" | grep -oP "status: \K\w+" || echo "unknown")
+        if [ "$VM_STATUS" == "running" ]; then
+            echo "VMを停止中..." >&2
+            qm stop "$VM_ID" || error_exit "VM停止に失敗しました"
+            sleep 3
+        fi
+        
+        # VM削除
+        qm destroy "$VM_ID" || error_exit "VM削除に失敗しました"
+        echo "✓ VM削除完了" >&2
+        echo "" >&2
+        
+        # 削除後、設定ファイルが完全にクリーンアップされるまで少し待機
+        sleep 2
+    else
+        echo "処理を中止しました" >&2
+        exit 0
+    fi
 fi
 
 # メモリをMB単位に変換
