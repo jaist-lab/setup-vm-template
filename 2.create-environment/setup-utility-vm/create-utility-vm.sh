@@ -1,5 +1,5 @@
 #!/bin/bash
-# create-production-cluster.sh - Production環境のKubernetesクラスタを作成
+# create-utility-vm.sh
 
 # ===================================
 # スクリプト設定
@@ -7,7 +7,7 @@
 set -e  # エラー時に即座に終了
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLONE_SCRIPT="${SCRIPT_DIR}/clone-and-configure-vm.sh"
+CLONE_SCRIPT="${SCRIPT_DIR}/../clone-and-configure-vm.sh"
 
 # 共通スクリプトの存在確認
 if [ ! -f "$CLONE_SCRIPT" ]; then
