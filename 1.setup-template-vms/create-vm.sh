@@ -157,7 +157,7 @@ fi
 ETCD_DISK_OPTION=""
 ETCD_DISK_INFO="なし"
 if [ "$ETCD_DISK_GB" -gt 0 ]; then
-    ETCD_DISK_OPTION="--scsi1 local-nvme:${ETCD_DISK_GB},format=raw,cache=writeback,discard=on,ssd=1"
+    ETCD_DISK_OPTION="--scsi1 local-nvme:${ETCD_DISK_GB},format=raw,cache=node,discard=on,ssd=1"
     ETCD_DISK_INFO="${ETCD_DISK_GB}GB (local-nvme)"
 fi
 
