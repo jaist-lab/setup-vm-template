@@ -355,7 +355,7 @@ if [ "$ETCD_DISK_GB" -gt 0 ]; then
     else
         # etcdディスクを追加（ターゲットノードで実行）
         qm_exec "$VM_ID" set "$VM_ID" \
-            --scsi1 "local-nvme:${ETCD_DISK_GB},format=raw,cache=none,aio=native,discard=on,ssd=1" \
+            --scsi1 "local-nvme:${ETCD_DISK_GB},format=raw,cache=none,aio=native,iothread=1,discard=on,ssd=1" \
             || error_exit "etcdディスク追加に失敗しました"
         echo "✓ etcdディスク追加: ${ETCD_DISK_GB}GB (local-nvme, /dev/sdb)"
     fi
