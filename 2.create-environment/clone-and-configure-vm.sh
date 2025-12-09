@@ -431,11 +431,11 @@ if [ -z "$SKIP_CLOUDINIT_CREATE" ]; then
 fi
 
 # ユーザー設定（ターゲットノードで実行）
-qm_exec "$VM_ID" set "$VM_ID" --ciuser jaist-lab || error_exit "ユーザー設定に失敗しました"
-echo "✓ ユーザー: jaist-lab"
+qm_exec "$VM_ID" set "$VM_ID" --ciuser jaistlab || error_exit "ユーザー設定に失敗しました"
+echo "✓ ユーザー: jaistlab"
 
 # パスワード設定（ターゲットノードで実行）
-qm_exec "$VM_ID" set "$VM_ID" --cipassword "jaileon02" || error_exit "パスワード設定に失敗しました"
+qm_exec "$VM_ID" set "$VM_ID" --cipassword "j4157Adm!n" || error_exit "パスワード設定に失敗しました"
 echo "✓ パスワード: ********"
 
 # SSHキー設定（ターゲットノードで実行）
@@ -496,15 +496,15 @@ vmbr100: ${IP_ADDRESS1}/24 (Cephネットワーク)
 DNS: $NAMESERVER
 
 === Cloud-Init設定 ===
-ユーザー: jaist-lab
-パスワード: jaileon02
+ユーザー: jaistlab
+パスワード: j4157Adm!n
 SSHキー: 設定済み
 
 === 次のステップ ===
 1. VM起動: qm start $VM_ID
 2. 起動確認: qm status $VM_ID
 3. IPアドレス確認: qm guest cmd $VM_ID network-get-interfaces
-4. SSH接続: ssh jaist-lab@${IP_ADDRESS0}
+4. SSH接続: ssh jaistlab@${IP_ADDRESS0}
 
 $([ "$ETCD_DISK_GB" -gt 0 ] && cat << 'ETCD_MSG'
 === etcdディスクについて ===
