@@ -92,6 +92,6 @@ echo '   ssh r760xs1 "qm status 100"'
 echo '   ssh r760xs2 "qm status 200"'
 echo ""
 echo "3. SSH接続確認:"
-echo "   ssh jaist-lab@172.16.100.100  # vessel"
+echo "   ssh jaistlab@172.16.100.100  # vessel"
 echo ""
 echo "========================================="
